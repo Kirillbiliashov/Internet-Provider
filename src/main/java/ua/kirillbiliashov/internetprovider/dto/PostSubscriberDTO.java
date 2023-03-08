@@ -1,6 +1,6 @@
 package ua.kirillbiliashov.internetprovider.dto;
 
-public class SubscriberDTO {
+public class PostSubscriberDTO {
 
   private String email;
   private String password;
@@ -11,7 +11,7 @@ public class SubscriberDTO {
     return email;
   }
 
-  public SubscriberDTO setEmail(String email) {
+  public PostSubscriberDTO setEmail(String email) {
     this.email = email;
     return this;
   }
@@ -20,7 +20,7 @@ public class SubscriberDTO {
     return password;
   }
 
-  public SubscriberDTO setPassword(String password) {
+  public PostSubscriberDTO setPassword(String password) {
     this.password = password;
     return this;
   }
@@ -29,7 +29,7 @@ public class SubscriberDTO {
     return firstName;
   }
 
-  public SubscriberDTO setFirstName(String firstName) {
+  public PostSubscriberDTO setFirstName(String firstName) {
     this.firstName = firstName;
     return this;
   }
@@ -38,7 +38,7 @@ public class SubscriberDTO {
     return lastName;
   }
 
-  public SubscriberDTO setLastName(String lastName) {
+  public PostSubscriberDTO setLastName(String lastName) {
     this.lastName = lastName;
     return this;
   }

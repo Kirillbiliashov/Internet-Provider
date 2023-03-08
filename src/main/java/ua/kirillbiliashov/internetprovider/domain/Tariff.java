@@ -16,6 +16,9 @@ public class Tariff extends AbstractEntity {
   @JoinColumn(name = "service_id", referencedColumnName = "id")
   private Service service;
 
+  @ManyToMany
+
+
   public String getName() {
     return name;
   }

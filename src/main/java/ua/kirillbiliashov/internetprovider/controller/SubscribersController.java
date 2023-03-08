@@ -7,8 +7,11 @@ import org.springframework.web.bind.annotation.*;
 import ua.kirillbiliashov.internetprovider.domain.Account;
 import ua.kirillbiliashov.internetprovider.domain.Person;
 import ua.kirillbiliashov.internetprovider.domain.Role;
-import ua.kirillbiliashov.internetprovider.dto.SubscriberDTO;
-import ua.kirillbiliashov.internetprovider.repository.AccountRepository;
+import ua.kirillbiliashov.internetprovider.domain.Tariff;
+import ua.kirillbiliashov.internetprovider.dto.AccountDTO;
+import ua.kirillbiliashov.internetprovider.dto.GetSubscriberDTO;
+import ua.kirillbiliashov.internetprovider.dto.GetTariffDTO;
+import ua.kirillbiliashov.internetprovider.dto.PostSubscriberDTO;
 import ua.kirillbiliashov.internetprovider.repository.PersonRepository;
 
 import java.util.List;
@@ -26,26 +29,59 @@ public class SubscribersController {
   }
 
   @GetMapping
-  public List<Person> subscribers() {
-    return personRepository.findAll();
+  public List<GetSubscriberDTO> subscribers() {
+    List<Person> subscribers = personRepository.findAll();
+    return subscribers
+        .stream()
+        .map(subscriber -> new GetSubscriberDTO()
+            .setFirstName(subscriber.getFirstName())
+            .setLastName(subscriber.getLastName())
+            .setBalance(subscriber.getBalance())
+            .setAccount(mapToAccountDTO(subscriber.getAccount()))
+            .setTariffs(getTariffDTOList(subscriber.getTariffs())))
+        .toList();
+  }
+
+  private List<GetTariffDTO> getTariffDTOList(List<Tariff> tariffs) {
+    return tariffs.stream().map(tariff -> new GetTariffDTO()
+        .setId(tariff.getId())
+        .setName(tariff.getName())
+        .setDuration(tariff.getDuration())
+        .setPrice(tariff.getPrice())).toList();
+  }
+
+  private AccountDTO mapToAccountDTO(Account account) {
+    return new AccountDTO()
+        .setEmail(account.getEmail())
+        .setPassword(account.getPassword());
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<Person> subscriber(@PathVariable int id) {
+  public ResponseEntity<GetSubscriberDTO> subscriber(@PathVariable int id) {
     Optional<Person> optPerson = personRepository.findById(id);
     if (optPerson.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    return new ResponseEntity<>(optPerson.get(), HttpStatus.OK);
+    Person person = optPerson.get();
+    Account account = person.getAccount();
+    GetSubscriberDTO subscriberDTO = new GetSubscriberDTO()
+        .setFirstName(person.getFirstName())
+        .setLastName(person.getLastName())
+        .setBalance(person.getBalance())
+        .setAccount(new AccountDTO()
+            .setEmail(account.getEmail())
+            .setPassword(account.getPassword()))
+        .setTariffs(getTariffDTOList(person.getTariffs()));
+    return new ResponseEntity<>(subscriberDTO, HttpStatus.OK);
   }
 
   @PostMapping("/register")
-  public ResponseEntity<HttpStatus> register(@RequestBody SubscriberDTO subscriberDTO) {
+  public ResponseEntity<HttpStatus> register(@RequestBody PostSubscriberDTO postSubscriberDTO) {
     Account account = new Account();
-    account.setEmail(subscriberDTO.getEmail());
-    account.setPassword(subscriberDTO.getPassword());
+    account.setEmail(postSubscriberDTO.getEmail());
+    account.setPassword(postSubscriberDTO.getPassword());
     account.setRole(Role.ROLE_ADMIN);
     Person person = new Person();
-    person.setFirstName(subscriberDTO.getFirstName());
-    person.setLastName(subscriberDTO.getLastName());
+    person.setFirstName(postSubscriberDTO.getFirstName());
+    person.setLastName(postSubscriberDTO.getLastName());
     person.setAccount(account);
     personRepository.save(person);
     return ResponseEntity.ok(HttpStatus.OK);
