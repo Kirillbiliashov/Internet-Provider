@@ -11,9 +11,6 @@ public class Account extends AbstractEntity {
   @Enumerated(EnumType.STRING)
   private Role role;
 
-  @OneToOne(mappedBy = "account")
-  private Person person;
-
   public String getEmail() {
     return email;
   }
@@ -38,16 +35,6 @@ public class Account extends AbstractEntity {
 
   public Account setRole(Role role) {
     this.role = role;
-    return this;
-  }
-
-
-  public Person getPerson() {
-    return person;
-  }
-
-  public Account setPerson(Person person) {
-    this.person = person;
     return this;
   }
 

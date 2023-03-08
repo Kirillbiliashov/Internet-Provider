@@ -16,9 +16,6 @@ public class Tariff extends AbstractEntity {
   @JoinColumn(name = "service_id", referencedColumnName = "id")
   private Service service;
 
-  @ManyToMany
-  private List<Person> subscribers;
-
   public String getName() {
     return name;
   }
@@ -55,12 +52,4 @@ public class Tariff extends AbstractEntity {
     return this;
   }
 
-  public List<Person> getSubscribers() {
-    return subscribers;
-  }
-
-  public Tariff setSubscribers(List<Person> subscribers) {
-    this.subscribers = subscribers;
-    return this;
-  }
 }

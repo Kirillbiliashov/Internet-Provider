@@ -1,5 +1,6 @@
 package ua.kirillbiliashov.internetprovider.domain;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -19,10 +20,12 @@ public class Person extends AbstractEntity {
 
   private int balance;
 
-  @ManyToMany(mappedBy = "subscribers")
+  @ManyToMany
+  @JoinTable(name = "person_tariff", joinColumns = @JoinColumn(name = "tariff_id"),
+      inverseJoinColumns = @JoinColumn(name = "person_id"))
   private List<Tariff> tariffs;
 
-  @OneToOne
+  @OneToOne(cascade = CascadeType.PERSIST)
   @JoinColumn(name = "account_id", referencedColumnName = "id")
   private Account account;
 
