@@ -1,5 +1,6 @@
 package ua.kirillbiliashov.internetprovider.controller;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,10 +23,13 @@ import java.util.Optional;
 public class SubscribersController {
 
   private final PersonRepository personRepository;
+  private final ModelMapper modelMapper;
 
   @Autowired
-  public SubscribersController(PersonRepository personRepository) {
+  public SubscribersController(PersonRepository personRepository,
+                               ModelMapper modelMapper) {
     this.personRepository = personRepository;
+    this.modelMapper = modelMapper;
   }
 
   @GetMapping
@@ -33,27 +37,8 @@ public class SubscribersController {
     List<Person> subscribers = personRepository.findAll();
     return subscribers
         .stream()
-        .map(subscriber -> new GetSubscriberDTO()
-            .setFirstName(subscriber.getFirstName())
-            .setLastName(subscriber.getLastName())
-            .setBalance(subscriber.getBalance())
-            .setAccount(mapToAccountDTO(subscriber.getAccount()))
-            .setTariffs(getTariffDTOList(subscriber.getTariffs())))
+        .map(subscriber -> modelMapper.map(subscriber, GetSubscriberDTO.class))
         .toList();
-  }
-
-  private List<GetTariffDTO> getTariffDTOList(List<Tariff> tariffs) {
-    return tariffs.stream().map(tariff -> new GetTariffDTO()
-        .setId(tariff.getId())
-        .setName(tariff.getName())
-        .setDuration(tariff.getDuration())
-        .setPrice(tariff.getPrice())).toList();
-  }
-
-  private AccountDTO mapToAccountDTO(Account account) {
-    return new AccountDTO()
-        .setEmail(account.getEmail())
-        .setPassword(account.getPassword());
   }
 
   @GetMapping("/{id}")
@@ -61,28 +46,14 @@ public class SubscribersController {
     Optional<Person> optPerson = personRepository.findById(id);
     if (optPerson.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     Person person = optPerson.get();
-    Account account = person.getAccount();
-    GetSubscriberDTO subscriberDTO = new GetSubscriberDTO()
-        .setFirstName(person.getFirstName())
-        .setLastName(person.getLastName())
-        .setBalance(person.getBalance())
-        .setAccount(new AccountDTO()
-            .setEmail(account.getEmail())
-            .setPassword(account.getPassword()))
-        .setTariffs(getTariffDTOList(person.getTariffs()));
+    GetSubscriberDTO subscriberDTO = modelMapper.map(person, GetSubscriberDTO.class);
     return new ResponseEntity<>(subscriberDTO, HttpStatus.OK);
   }
 
   @PostMapping("/register")
   public ResponseEntity<HttpStatus> register(@RequestBody PostSubscriberDTO postSubscriberDTO) {
-    Account account = new Account();
-    account.setEmail(postSubscriberDTO.getEmail());
-    account.setPassword(postSubscriberDTO.getPassword());
-    account.setRole(Role.ROLE_ADMIN);
-    Person person = new Person();
-    person.setFirstName(postSubscriberDTO.getFirstName());
-    person.setLastName(postSubscriberDTO.getLastName());
-    person.setAccount(account);
+    Person person = modelMapper.map(postSubscriberDTO, Person.class);
+    person.getAccount().setRole(Role.ROLE_SUBSCRIBER);
     personRepository.save(person);
     return ResponseEntity.ok(HttpStatus.OK);
   }

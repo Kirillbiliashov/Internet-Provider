@@ -1,10 +1,12 @@
 package ua.kirillbiliashov.internetprovider.controller;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.kirillbiliashov.internetprovider.domain.Person;
+import ua.kirillbiliashov.internetprovider.domain.Service;
 import ua.kirillbiliashov.internetprovider.domain.Tariff;
 import ua.kirillbiliashov.internetprovider.dto.GetTariffDTO;
 import ua.kirillbiliashov.internetprovider.dto.PostTariffDTO;
@@ -19,35 +21,29 @@ import java.util.Optional;
 public class TariffsController {
 
   private final TariffRepository tariffRepository;
-  private final ServiceRepository serviceRepository;
   private final PersonRepository personRepository;
+  private final ModelMapper modelMapper;
 
   @Autowired
   public TariffsController(TariffRepository tariffRepository,
-                           ServiceRepository serviceRepository,
-                           PersonRepository personRepository) {
+                           PersonRepository personRepository,
+                           ModelMapper modelMapper) {
     this.tariffRepository = tariffRepository;
-    this.serviceRepository = serviceRepository;
     this.personRepository = personRepository;
+    this.modelMapper = modelMapper;
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<GetTariffDTO> tariff(@PathVariable int id) {
     Optional<Tariff> optTariff = tariffRepository.findById(id);
     if (optTariff.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    Tariff tariff = optTariff.get();
-    GetTariffDTO tariffDTO = new GetTariffDTO()
-        .setId(tariff.getId())
-        .setName(tariff.getName())
-        .setPrice(tariff.getPrice())
-        .setDuration(tariff.getDuration());
+    GetTariffDTO tariffDTO = modelMapper.map(optTariff.get(), GetTariffDTO.class);
     return new ResponseEntity<>(tariffDTO, HttpStatus.OK);
   }
 
   @PostMapping("/add")
   public ResponseEntity<HttpStatus> addTariff(@RequestBody PostTariffDTO postTariffDTO) {
-    Tariff tariff = new Tariff();
-    map(tariff, postTariffDTO);
+    Tariff tariff = modelMapper.map(postTariffDTO, Tariff.class);
     tariffRepository.save(tariff);
     return ResponseEntity.ok(HttpStatus.CREATED);
   }
@@ -67,7 +63,7 @@ public class TariffsController {
     tariff.setName(postTariffDTO.getName());
     tariff.setDuration(postTariffDTO.getDuration());
     tariff.setPrice(postTariffDTO.getPrice());
-    tariff.setService(serviceRepository.getReferenceById(postTariffDTO.getServiceId()));
+    tariff.setService(modelMapper.map(postTariffDTO.getService(), Service.class));
   }
 
 

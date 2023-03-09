@@ -5,7 +5,7 @@ public class PostTariffDTO {
   private String name;
   private double price;
   private int duration;
-  private int serviceId;
+  private ServiceDTO service;
 
   public String getName() {
     return name;
@@ -34,13 +34,12 @@ public class PostTariffDTO {
     return this;
   }
 
-  public int getServiceId() {
-    return serviceId;
+  public ServiceDTO getService() {
+    return service;
   }
 
-  public PostTariffDTO setServiceId(int serviceId) {
-    this.serviceId = serviceId;
+  public PostTariffDTO setService(ServiceDTO service) {
+    this.service = service;
     return this;
   }
-
 }

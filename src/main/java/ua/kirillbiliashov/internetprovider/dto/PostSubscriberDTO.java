@@ -2,28 +2,9 @@ package ua.kirillbiliashov.internetprovider.dto;
 
 public class PostSubscriberDTO {
 
-  private String email;
-  private String password;
   private String firstName;
   private String lastName;
-
-  public String getEmail() {
-    return email;
-  }
-
-  public PostSubscriberDTO setEmail(String email) {
-    this.email = email;
-    return this;
-  }
-
-  public String getPassword() {
-    return password;
-  }
-
-  public PostSubscriberDTO setPassword(String password) {
-    this.password = password;
-    return this;
-  }
+  private AccountDTO account;
 
   public String getFirstName() {
     return firstName;
@@ -42,4 +23,14 @@ public class PostSubscriberDTO {
     this.lastName = lastName;
     return this;
   }
+
+  public AccountDTO getAccount() {
+    return account;
+  }
+
+  public PostSubscriberDTO setAccount(AccountDTO account) {
+    this.account = account;
+    return this;
+  }
+
 }
