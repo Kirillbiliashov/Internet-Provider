@@ -1,22 +1,17 @@
 package ua.kirillbiliashov.internetprovider.dto;
 
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.core.Relation;
+
 import java.util.List;
 
-public class ServiceDTO {
+@Relation(collectionRelation = "services")
+public class ServiceDTO extends RepresentationModel<ServiceDTO> {
 
-  private int id;
   private String name;
   private String description;
-  private List<GetTariffDTO> tariffs;
-
-  public int getId() {
-    return id;
-  }
-
-  public ServiceDTO setId(int id) {
-    this.id = id;
-    return this;
-  }
+  private CollectionModel<GetTariffDTO> tariffs;
 
   public String getName() {
     return name;
@@ -36,12 +31,13 @@ public class ServiceDTO {
     return this;
   }
 
-  public List<GetTariffDTO> getTariffs() {
+  public CollectionModel<GetTariffDTO> getTariffs() {
     return tariffs;
   }
 
-  public ServiceDTO setTariffs(List<GetTariffDTO> tariffs) {
+  public ServiceDTO setTariffs(CollectionModel<GetTariffDTO> tariffs) {
     this.tariffs = tariffs;
     return this;
   }
+
 }

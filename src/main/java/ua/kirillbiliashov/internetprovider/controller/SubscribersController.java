@@ -2,21 +2,22 @@ package ua.kirillbiliashov.internetprovider.controller;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ua.kirillbiliashov.internetprovider.domain.Account;
+import ua.kirillbiliashov.internetprovider.assemblers.SubscriberDTOAssembler;
 import ua.kirillbiliashov.internetprovider.domain.Person;
 import ua.kirillbiliashov.internetprovider.domain.Role;
-import ua.kirillbiliashov.internetprovider.domain.Tariff;
-import ua.kirillbiliashov.internetprovider.dto.AccountDTO;
 import ua.kirillbiliashov.internetprovider.dto.GetSubscriberDTO;
-import ua.kirillbiliashov.internetprovider.dto.GetTariffDTO;
 import ua.kirillbiliashov.internetprovider.dto.PostSubscriberDTO;
 import ua.kirillbiliashov.internetprovider.repository.PersonRepository;
 
 import java.util.List;
 import java.util.Optional;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/subscribers")
@@ -24,29 +25,42 @@ public class SubscribersController {
 
   private final PersonRepository personRepository;
   private final ModelMapper modelMapper;
+  private final SubscriberDTOAssembler subscriberDTOAssembler;
 
   @Autowired
   public SubscribersController(PersonRepository personRepository,
-                               ModelMapper modelMapper) {
+                               ModelMapper modelMapper,
+                               SubscriberDTOAssembler subscriberDTOAssembler) {
     this.personRepository = personRepository;
     this.modelMapper = modelMapper;
+    this.subscriberDTOAssembler = subscriberDTOAssembler;
   }
 
   @GetMapping
-  public List<GetSubscriberDTO> subscribers() {
+  public CollectionModel<GetSubscriberDTO> subscribers() {
     List<Person> subscribers = personRepository.findAll();
-    return subscribers
-        .stream()
-        .map(subscriber -> modelMapper.map(subscriber, GetSubscriberDTO.class))
-        .toList();
+    CollectionModel<GetSubscriberDTO> collectionModel =
+        subscriberDTOAssembler.toCollectionModel(subscribers);
+    collectionModel.add(linkTo(methodOn(SubscribersController.class).blockedSubscribers())
+        .withRel("blocked subscribers"));
+    return collectionModel;
+  }
+
+  @GetMapping("/blocked")
+  public CollectionModel<GetSubscriberDTO> blockedSubscribers() {
+    List<Person> subscribers = personRepository.findByIsBlockedTrue();
+    CollectionModel<GetSubscriberDTO> collectionModel =
+        subscriberDTOAssembler.toCollectionModel(subscribers);
+    collectionModel.add(linkTo(methodOn(SubscribersController.class).subscribers())
+        .withRel("subscribers"));
+    return collectionModel;
   }
 
   @GetMapping("/{id}")
   public ResponseEntity<GetSubscriberDTO> subscriber(@PathVariable int id) {
     Optional<Person> optPerson = personRepository.findById(id);
     if (optPerson.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    Person person = optPerson.get();
-    GetSubscriberDTO subscriberDTO = modelMapper.map(person, GetSubscriberDTO.class);
+    GetSubscriberDTO subscriberDTO = subscriberDTOAssembler.toModel(optPerson.get());
     return new ResponseEntity<>(subscriberDTO, HttpStatus.OK);
   }
 

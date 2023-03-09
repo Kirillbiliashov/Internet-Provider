@@ -1,20 +1,14 @@
 package ua.kirillbiliashov.internetprovider.dto;
 
-public class GetTariffDTO {
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.core.Relation;
 
-  private int id;
+@Relation(collectionRelation = "tariffs")
+public class GetTariffDTO extends RepresentationModel<GetTariffDTO> {
+
   private String name;
   private double price;
   private int duration;
-
-  public int getId() {
-    return id;
-  }
-
-  public GetTariffDTO setId(int id) {
-    this.id = id;
-    return this;
-  }
 
   public String getName() {
     return name;

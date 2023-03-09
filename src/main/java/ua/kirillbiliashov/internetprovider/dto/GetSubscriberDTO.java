@@ -1,24 +1,20 @@
 package ua.kirillbiliashov.internetprovider.dto;
 
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.core.Relation;
+
 import java.util.List;
 
-public class GetSubscriberDTO {
+@Relation(collectionRelation = "subscribers")
+public class GetSubscriberDTO extends RepresentationModel<GetSubscriberDTO> {
 
-  private int id;
   private String firstName;
   private String lastName;
   private int balance;
+  private boolean isBlocked;
   private AccountDTO account;
-  private List<GetTariffDTO> tariffs;
-
-  public int getId() {
-    return id;
-  }
-
-  public GetSubscriberDTO setId(int id) {
-    this.id = id;
-    return this;
-  }
+  private CollectionModel<GetTariffDTO> tariffs;
 
   public String getFirstName() {
     return firstName;
@@ -47,15 +43,6 @@ public class GetSubscriberDTO {
     return this;
   }
 
-  public List<GetTariffDTO> getTariffs() {
-    return tariffs;
-  }
-
-  public GetSubscriberDTO setTariffs(List<GetTariffDTO> tariffs) {
-    this.tariffs = tariffs;
-    return this;
-  }
-
   public int getBalance() {
     return balance;
   }
@@ -65,4 +52,21 @@ public class GetSubscriberDTO {
     return this;
   }
 
+  public boolean isBlocked() {
+    return isBlocked;
+  }
+
+  public GetSubscriberDTO setBlocked(boolean blocked) {
+    isBlocked = blocked;
+    return this;
+  }
+
+  public CollectionModel<GetTariffDTO> getTariffs() {
+    return tariffs;
+  }
+
+  public GetSubscriberDTO setTariffs(CollectionModel<GetTariffDTO> tariffs) {
+    this.tariffs = tariffs;
+    return this;
+  }
 }
