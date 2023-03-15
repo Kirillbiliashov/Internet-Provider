@@ -21,17 +21,14 @@ import java.util.Optional;
 @RequestMapping("/tariffs")
 public class TariffsController {
 
-  private final ModelMapper modelMapper;
   private final TariffDTOAssembler tariffDTOAssembler;
   private final PersonService personService;
   private final TariffService tariffService;
 
   @Autowired
-  public TariffsController(ModelMapper modelMapper,
-                           TariffDTOAssembler tariffDTOAssembler,
+  public TariffsController(TariffDTOAssembler tariffDTOAssembler,
                            PersonService personService,
                            TariffService tariffService) {
-    this.modelMapper = modelMapper;
     this.tariffDTOAssembler = tariffDTOAssembler;
     this.personService = personService;
     this.tariffService = tariffService;
@@ -47,27 +44,16 @@ public class TariffsController {
 
   @PostMapping("/add")
   @ResponseStatus(code = HttpStatus.CREATED)
-  public void addTariff(@RequestBody PostTariffDTO postTariffDTO) {
-    Tariff tariff = modelMapper.map(postTariffDTO, Tariff.class);
+  public void addTariff(@RequestBody Tariff tariff) {
     tariffService.save(tariff);
   }
 
   @PatchMapping("/{id}")
   public ResponseEntity<HttpStatus> updateTariff(@PathVariable int id,
-                                                 @RequestBody PostTariffDTO postTariffDTO) {
-    Optional<Tariff> optTariff = tariffService.find(id);
-    if (optTariff.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    Tariff tariff = optTariff.get();
-    map(tariff, postTariffDTO);
-    tariffService.save(tariff);
-    return ResponseEntity.ok(HttpStatus.OK);
-  }
-
-  private void map(Tariff tariff, PostTariffDTO postTariffDTO) {
-    tariff.setName(postTariffDTO.getName());
-    tariff.setDuration(postTariffDTO.getDuration());
-    tariff.setPrice(postTariffDTO.getPrice());
-    tariff.setService(modelMapper.map(postTariffDTO.getService(), Service.class));
+                                                 @RequestBody Tariff tariff) {
+    boolean isChange = tariffService.update(id, tariff);
+    return isChange ? ResponseEntity.ok(HttpStatus.OK) :
+        new ResponseEntity<>(HttpStatus.NOT_FOUND);
   }
 
   @DeleteMapping("/{id}")

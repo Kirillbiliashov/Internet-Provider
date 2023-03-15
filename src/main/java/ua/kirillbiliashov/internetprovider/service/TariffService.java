@@ -6,6 +6,10 @@ import java.util.Optional;
 
 public interface TariffService {
   Optional<Tariff> find(int id);
+
   void delete(int id);
+
   void save(Tariff tariff);
+
+  boolean update(int id, Tariff newTariff);
 }

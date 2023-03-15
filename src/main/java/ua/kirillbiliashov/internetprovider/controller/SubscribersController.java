@@ -24,15 +24,12 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping("/subscribers")
 public class SubscribersController {
 
-  private final ModelMapper modelMapper;
   private final SubscriberDTOAssembler subscriberDTOAssembler;
   private final PersonService personService;
 
   @Autowired
-  public SubscribersController(ModelMapper modelMapper,
-                               SubscriberDTOAssembler subscriberDTOAssembler,
+  public SubscribersController(SubscriberDTOAssembler subscriberDTOAssembler,
                                PersonService personService) {
-    this.modelMapper = modelMapper;
     this.subscriberDTOAssembler = subscriberDTOAssembler;
     this.personService = personService;
   }
@@ -66,8 +63,7 @@ public class SubscribersController {
   }
 
   @PostMapping("/register")
-  public ResponseEntity<HttpStatus> register(@RequestBody PostSubscriberDTO postSubscriberDTO) {
-    Person person = modelMapper.map(postSubscriberDTO, Person.class);
+  public ResponseEntity<HttpStatus> register(@RequestBody Person person) {
     personService.register(person);
     return ResponseEntity.ok(HttpStatus.OK);
   }
