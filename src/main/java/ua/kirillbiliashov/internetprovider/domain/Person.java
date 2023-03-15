@@ -21,8 +21,8 @@ public class Person extends AbstractEntity {
   private int balance;
 
   @ManyToMany
-  @JoinTable(name = "person_tariff", joinColumns = @JoinColumn(name = "tariff_id"),
-      inverseJoinColumns = @JoinColumn(name = "person_id"))
+  @JoinTable(name = "person_tariff", joinColumns = @JoinColumn(name = "person_id"),
+      inverseJoinColumns = @JoinColumn(name = "tariff_id"))
   private List<Tariff> tariffs;
 
   @OneToOne(cascade = CascadeType.PERSIST)

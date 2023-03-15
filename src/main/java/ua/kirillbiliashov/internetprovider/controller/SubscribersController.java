@@ -12,6 +12,7 @@ import ua.kirillbiliashov.internetprovider.domain.Role;
 import ua.kirillbiliashov.internetprovider.dto.GetSubscriberDTO;
 import ua.kirillbiliashov.internetprovider.dto.PostSubscriberDTO;
 import ua.kirillbiliashov.internetprovider.repository.PersonRepository;
+import ua.kirillbiliashov.internetprovider.service.PersonService;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,22 +24,22 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping("/subscribers")
 public class SubscribersController {
 
-  private final PersonRepository personRepository;
   private final ModelMapper modelMapper;
   private final SubscriberDTOAssembler subscriberDTOAssembler;
+  private final PersonService personService;
 
   @Autowired
-  public SubscribersController(PersonRepository personRepository,
-                               ModelMapper modelMapper,
-                               SubscriberDTOAssembler subscriberDTOAssembler) {
-    this.personRepository = personRepository;
+  public SubscribersController(ModelMapper modelMapper,
+                               SubscriberDTOAssembler subscriberDTOAssembler,
+                               PersonService personService) {
     this.modelMapper = modelMapper;
     this.subscriberDTOAssembler = subscriberDTOAssembler;
+    this.personService = personService;
   }
 
   @GetMapping
   public CollectionModel<GetSubscriberDTO> subscribers() {
-    List<Person> subscribers = personRepository.findAll();
+    List<Person> subscribers = personService.findAll();
     CollectionModel<GetSubscriberDTO> collectionModel =
         subscriberDTOAssembler.toCollectionModel(subscribers);
     collectionModel.add(linkTo(methodOn(SubscribersController.class).blockedSubscribers())
@@ -48,7 +49,7 @@ public class SubscribersController {
 
   @GetMapping("/blocked")
   public CollectionModel<GetSubscriberDTO> blockedSubscribers() {
-    List<Person> subscribers = personRepository.findByIsBlockedTrue();
+    List<Person> subscribers = personService.findBlocked();
     CollectionModel<GetSubscriberDTO> collectionModel =
         subscriberDTOAssembler.toCollectionModel(subscribers);
     collectionModel.add(linkTo(methodOn(SubscribersController.class).subscribers())
@@ -58,7 +59,7 @@ public class SubscribersController {
 
   @GetMapping("/{id}")
   public ResponseEntity<GetSubscriberDTO> subscriber(@PathVariable int id) {
-    Optional<Person> optPerson = personRepository.findById(id);
+    Optional<Person> optPerson = personService.find(id);
     if (optPerson.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     GetSubscriberDTO subscriberDTO = subscriberDTOAssembler.toModel(optPerson.get());
     return new ResponseEntity<>(subscriberDTO, HttpStatus.OK);
@@ -67,40 +68,30 @@ public class SubscribersController {
   @PostMapping("/register")
   public ResponseEntity<HttpStatus> register(@RequestBody PostSubscriberDTO postSubscriberDTO) {
     Person person = modelMapper.map(postSubscriberDTO, Person.class);
-    person.getAccount().setRole(Role.ROLE_SUBSCRIBER);
-    personRepository.save(person);
+    personService.register(person);
     return ResponseEntity.ok(HttpStatus.OK);
   }
 
   @PatchMapping("/block/{id}")
   public ResponseEntity<HttpStatus> blockSubscriber(@PathVariable int id) {
-    Optional<Person> optPerson = personRepository.findById(id);
-    if (optPerson.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    Person person = optPerson.get();
-    person.setBlocked(true);
-    personRepository.save(person);
-    return ResponseEntity.ok(HttpStatus.OK);
+    boolean isChange = personService.changeBlock(id, true);
+    return isChange ? ResponseEntity.ok(HttpStatus.OK) :
+        new ResponseEntity<>(HttpStatus.NOT_FOUND);
   }
 
   @PatchMapping("/unlock/{id}")
   public ResponseEntity<HttpStatus> unlockSubscriber(@PathVariable int id) {
-    Optional<Person> optPerson = personRepository.findById(id);
-    if (optPerson.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    Person person = optPerson.get();
-    person.setBlocked(false);
-    personRepository.save(person);
-    return ResponseEntity.ok(HttpStatus.OK);
+    boolean isChange = personService.changeBlock(id, false);
+    return isChange ? ResponseEntity.ok(HttpStatus.OK) :
+        new ResponseEntity<>(HttpStatus.NOT_FOUND);
   }
 
   @PatchMapping("/replenish/{id}")
   public ResponseEntity<HttpStatus> replenishBalance(@PathVariable int id,
       @RequestParam("replenishSum") int sum) {
-    Optional<Person> optPerson = personRepository.findById(id);
-    if (optPerson.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    Person person = optPerson.get();
-    person.setBalance(person.getBalance() + sum);
-    personRepository.save(person);
-    return ResponseEntity.ok(HttpStatus.OK);
+    boolean isChange = personService.replenishBalance(id, sum);
+    return isChange ? ResponseEntity.ok(HttpStatus.OK) :
+        new ResponseEntity<>(HttpStatus.NOT_FOUND);
   }
 
 }
